@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+  background: #f8fafc;
+}
+
+main {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+li {
+  margin-bottom: 12px;
+}
+
+[role="alert"] {
+  color: #b91c1c;
+}
