@@ -1,5 +1,6 @@
 package com.reservation.authentication;
 
+import com.reservation.support.ApiSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -249,16 +250,17 @@ class RegistrationIntegrationTests {
         return post(json.writeValueAsString(body));
     }
 
+    // Каждая регистрация — как новый посетитель: своя сессия, CSRF-токен этой сессии и её cookie.
     private HttpResponse<String> post(String body) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder(uri("/api/auth/register"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-                .build();
-        return http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        return new ApiSession(baseUrl()).postJsonWithCsrf("/api/auth/register", body);
     }
 
     private URI uri(String path) {
-        return URI.create("http://localhost:" + environment.getProperty("local.server.port") + path);
+        return URI.create(baseUrl() + path);
+    }
+
+    private String baseUrl() {
+        return "http://localhost:" + environment.getProperty("local.server.port");
     }
 
     private long countUsers() {

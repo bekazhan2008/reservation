@@ -29,6 +29,19 @@
   409 при повторном email, 400 в едином формате ApiError
   {status, error, message, fieldErrors[{field, message}]}.
   Сессия не создаётся, пользователь не авторизуется.
+- Spring Security (HTTP): SecurityFilterChain в infrastructure/SecurityConfig.
+  Гостю доступны GET /api/health, /api/property-types, /api/auth/csrf
+  и POST /api/auth/register (с CSRF-токеном); всё остальное требует входа.
+  formLogin и HTTP Basic отключены. Ошибки фильтров отдаются JSON ApiError
+  (JsonSecurityErrorHandler): 401 "Authentication required",
+  403 "Invalid or missing CSRF token". Перенаправлений на HTML-форму нет.
+- GET /api/auth/csrf возвращает {token, headerName, parameterName}
+  (headerName = X-CSRF-TOKEN) и создаёт сессию (cookie JSESSIONID).
+- Интеграционные тесты безопасности (SecurityIntegrationTests): публичные GET,
+  получение токена, cookie HttpOnly + SameSite=Lax, 403 без токена / с неверным /
+  с токеном чужой сессии, 201 с токеном и cookie той же сессии, JSON 401 без
+  перенаправления на защищённом GET (тестовый endpoint /api/test/protected
+  существует только в src/test), отсутствие страницы /login.
 - Интеграционные тесты на настоящем PostgreSQL (база reservation_test) проверяют:
   нормализацию и сохранение через UserRepository, @PrePersist (created_at),
   role=USER / email_verified=false / enabled=true / deleted_at=null,
@@ -52,6 +65,18 @@ PostgreSQL с Windows доступен на localhost:15432.
 Backend работает на localhost:8080.
 Vite перенаправляет запросы /api на backend.
 Backend читает ../.env относительно рабочей папки backend.
+
+## Проверка через Postman
+1. Запустить backend (порт 8080).
+2. GET http://localhost:8080/api/auth/csrf — Postman сам сохранит cookie JSESSIONID;
+   скопировать значение token из ответа.
+3. POST http://localhost:8080/api/auth/register:
+   заголовки Content-Type: application/json и X-CSRF-TOKEN: <token>,
+   тело {"email": ..., "password": ..., "firstName": ..., "lastName": ...}.
+   Ожидается 201. Без заголовка или с другим токеном — 403.
+4. Запрос должен идти с той же cookie, что и шаг 2 (одна вкладка/коллекция Postman).
+   Если удалить cookie, старый токен станет недействителен — повторить шаг 2.
+5. Использовать вымышленные данные; созданные пользователи остаются в рабочей базе.
 
 ## Тесты backend
 - Тесты используют профиль test (src/test/resources/application-test.properties)
@@ -80,6 +105,15 @@ Backend читает ../.env относительно рабочей папки 
 - Дубликат email: предварительная проверка в сервисе + saveAndFlush;
   окончательная защита — индекс users_email_lower_uk. В 409 превращается
   только нарушение этого индекса, прочие ошибки целостности — нет.
+- Авторизация будет на серверной HttpSession, без JWT.
+  CSRF включён, токен хранится в HttpSession (HttpSessionCsrfTokenRepository)
+  и отправляется в заголовке X-CSRF-TOKEN. Возвращаемый токен маскируется
+  (каждый запрос /api/auth/csrf даёт новое значение), все они действительны для сессии.
+- Cookie сессии: HttpOnly, SameSite=Lax; Secure не включён, т. к. локально HTTP.
+  Для продакшена с HTTPS нужно включить server.servlet.session.cookie.secure=true.
+- Автоконфигурация UserDetailsServiceAutoConfiguration исключена,
+  чтобы Spring Boot не создавал пользователя "user" со случайным паролем.
+- Тесты не отключают CSRF: каждая регистрация в тестах получает токен своей сессии.
 - Логгер org.hibernate.orm.jdbc.error понижен до ERROR, чтобы текст ошибок
   PostgreSQL (с email) не попадал в WARN-логи.
 
@@ -90,8 +124,8 @@ Backend читает ../.env относительно рабочей папки 
 - Полный запуск всех шести сервисов ещё не реализован.
 
 ## Следующие задачи
-- Подключить полную HTTP-конфигурацию Spring Security (сейчас есть только spring-security-crypto).
-- Реализовать вход (login) и JWT.
+- Реализовать вход (login) и выход (logout) на HttpSession:
+  UserDetailsService по таблице users, смена ID сессии и CSRF-токена после входа.
 - Форма регистрации во frontend.
 - Затем подключить Redis, Java Worker и Resend для подтверждения email.
 
