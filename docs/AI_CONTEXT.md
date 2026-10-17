@@ -12,6 +12,19 @@
 - GET /api/health возвращает {"status":"UP"}.
 - Миграция V1 создаёт property_types и шесть типов недвижимости.
 - GET /api/property-types читает данные из PostgreSQL.
+- Миграция V2 создаёт таблицу users (без данных):
+  уникальный индекс users_email_lower_uk по lower(email),
+  CHECK users_role_check (role IN ('USER','ADMIN')),
+  SQL DEFAULT для role, email_verified, enabled, created_at.
+- JPA-слой пользователей в com.reservation.users:
+  сущность User, enum UserRole, UserRepository.
+  Роль хранится строкой (EnumType.STRING), время — Instant.
+  Значения по умолчанию заданы в полях Java, created_at — в @PrePersist.
+  toString() не выводит passwordHash.
+- Проверено: применение V2, SQL-ограничения (уникальность lower(email),
+  CHECK роли, DEFAULT) и запуск backend с ddl-auto=validate.
+- Ещё не проверено интеграционно: сохранение User через UserRepository,
+  работа @PrePersist и Java-значения по умолчанию.
 - React показывает типы недвижимости через API.
 - npm run build и npm run lint проходят.
 - Репозиторий отправлен на GitHub.
@@ -33,6 +46,10 @@ Backend читает ../.env относительно рабочей папки 
 - Hibernate настроен на ddl-auto=validate.
 - API возвращает DTO.
 - Секреты находятся в .env и исключены из Git.
+- Email уникален без учёта регистра: это проверяет БД по lower(email);
+  исходное написание email сохраняется.
+- Добавлено поле deleted_at для будущей мягкой деактивации; сама операция пока не реализована.
+- Тестовые пользователи и администраторы миграциями не создаются.
 
 ## Особенности окружения
 - Docker: 4 CPU, 3 ГБ RAM, 3 ГБ swap, диск 64 ГБ.
@@ -41,9 +58,10 @@ Backend читает ../.env относительно рабочей папки 
 - Полный запуск всех шести сервисов ещё не реализован.
 
 ## Следующие задачи
-- Спроектировать users и миграцию V2.
 - Подключить Spring Security и Bean Validation.
 - Реализовать регистрацию с BCrypt и проверкой уникальности email.
+  Вместе с ней добавить интеграционный тест сохранения User через UserRepository
+  (@PrePersist, Java-значения по умолчанию) с откатом транзакции.
 - Затем подключить Redis, Java Worker и Resend для подтверждения email.
 
 ## Правила обучения
