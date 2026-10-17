@@ -23,9 +23,21 @@
   toString() не выводит passwordHash.
 - Проверено: применение V2, SQL-ограничения (уникальность lower(email),
   CHECK роли, DEFAULT) и запуск backend с ddl-auto=validate.
-- Ещё не проверено интеграционно: сохранение User через UserRepository,
-  работа @PrePersist и Java-значения по умолчанию.
-- React показывает типы недвижимости через API.
+- POST /api/auth/register (пакет com.reservation.authentication):
+  201 и DTO {id, email, firstName, lastName, emailVerified};
+  Bean Validation, BCrypt через PasswordEncoder (spring-security-crypto),
+  409 при повторном email, 400 в едином формате ApiError
+  {status, error, message, fieldErrors[{field, message}]}.
+  Сессия не создаётся, пользователь не авторизуется.
+- Интеграционные тесты на настоящем PostgreSQL (база reservation_test) проверяют:
+  нормализацию и сохранение через UserRepository, @PrePersist (created_at),
+  role=USER / email_verified=false / enabled=true / deleted_at=null,
+  BCrypt-хеш и PasswordEncoder.matches, 409 для дубликата с другим регистром и пробелами,
+  гонку параллельных регистраций (ровно один 201), 400 для пустых/некорректных полей,
+  слишком длинных значений, пароля > 72 байт UTF-8 и битого JSON,
+  игнорирование role/emailVerified/enabled из JSON, отсутствие пароля и хеша в ответе,
+  работу GET /api/property-types.
+- React показывает типы недвижимости через API (форма регистрации ещё не сделана).
 - npm run build и npm run lint проходят.
 - Репозиторий отправлен на GitHub.
 
@@ -41,6 +53,16 @@ Backend работает на localhost:8080.
 Vite перенаправляет запросы /api на backend.
 Backend читает ../.env относительно рабочей папки backend.
 
+## Тесты backend
+- Тесты используют профиль test (src/test/resources/application-test.properties)
+  и отдельную базу reservation_test в том же контейнере; рабочая база не затрагивается.
+- Логин и пароль берутся из того же .env; имя базы можно переопределить POSTGRES_TEST_DB.
+- Один раз создать базу (из корня):
+  docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE DATABASE reservation_test"'
+- Запуск: из backend .\mvnw.cmd test. Flyway сам применяет миграции к reservation_test.
+- Тесты проверяют, что имя базы оканчивается на _test, и удаляют только свои строки
+  (email на уникальном домене *.example.test).
+
 ## Принятые решения
 - Структуру БД меняет Flyway.
 - Hibernate настроен на ddl-auto=validate.
@@ -50,6 +72,16 @@ Backend читает ../.env относительно рабочей папки 
   исходное написание email сохраняется.
 - Добавлено поле deleted_at для будущей мягкой деактивации; сама операция пока не реализована.
 - Тестовые пользователи и администраторы миграциями не создаются.
+- Нормализация email при регистрации: strip() + toLowerCase(Locale.ROOT)
+  в компактном конструкторе RegistrationRequest, то есть до валидации и сохранения.
+  Имя и фамилия очищаются от пробелов по краям. Пароль не изменяется.
+- Пароль: минимум 8 символов и максимум 72 байта UTF-8 (предел BCrypt);
+  длиннее — 400, без усечения.
+- Дубликат email: предварительная проверка в сервисе + saveAndFlush;
+  окончательная защита — индекс users_email_lower_uk. В 409 превращается
+  только нарушение этого индекса, прочие ошибки целостности — нет.
+- Логгер org.hibernate.orm.jdbc.error понижен до ERROR, чтобы текст ошибок
+  PostgreSQL (с email) не попадал в WARN-логи.
 
 ## Особенности окружения
 - Docker: 4 CPU, 3 ГБ RAM, 3 ГБ swap, диск 64 ГБ.
@@ -58,10 +90,9 @@ Backend читает ../.env относительно рабочей папки 
 - Полный запуск всех шести сервисов ещё не реализован.
 
 ## Следующие задачи
-- Подключить Spring Security и Bean Validation.
-- Реализовать регистрацию с BCrypt и проверкой уникальности email.
-  Вместе с ней добавить интеграционный тест сохранения User через UserRepository
-  (@PrePersist, Java-значения по умолчанию) с откатом транзакции.
+- Подключить полную HTTP-конфигурацию Spring Security (сейчас есть только spring-security-crypto).
+- Реализовать вход (login) и JWT.
+- Форма регистрации во frontend.
 - Затем подключить Redis, Java Worker и Resend для подтверждения email.
 
 ## Правила обучения
