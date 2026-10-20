@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -34,6 +35,17 @@ public class ApiExceptionHandler {
     @ExceptionHandler(EmailAlreadyRegisteredException.class)
     public ResponseEntity<ApiError> handleDuplicateEmail(EmailAlreadyRegisteredException e) {
         return build(HttpStatus.CONFLICT, e.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthentication(
+            AuthenticationException e
+    ) {
+        return build(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid email or password",
+                List.of()
+        );
     }
 
     private static ResponseEntity<ApiError> build(HttpStatus status, String message,
