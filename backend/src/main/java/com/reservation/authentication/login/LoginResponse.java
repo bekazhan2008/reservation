@@ -1,4 +1,4 @@
-package com.reservation.authentication;
+package com.reservation.authentication.login;
 
 public record LoginResponse(
         String email,

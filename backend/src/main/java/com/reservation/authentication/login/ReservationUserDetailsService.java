@@ -1,4 +1,4 @@
-package com.reservation.authentication;
+package com.reservation.authentication.login;
 
 import com.reservation.users.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package com.reservation.authentication;
+package com.reservation.authentication.registration;
 
 public record RegistrationResponse(
         Long id,

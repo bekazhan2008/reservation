@@ -1,4 +1,4 @@
-package com.reservation.authentication;
+package com.reservation.authentication.registration;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

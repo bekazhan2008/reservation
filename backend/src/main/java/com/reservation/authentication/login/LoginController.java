@@ -1,4 +1,4 @@
-package com.reservation.authentication;
+package com.reservation.authentication.login;
 
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
