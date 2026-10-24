@@ -1,6 +1,7 @@
 package com.reservation.infrastructure;
 
-import com.reservation.authentication.EmailAlreadyRegisteredException;
+import com.reservation.authentication.registration.EmailAlreadyRegisteredException;
+import com.reservation.authentication.verification.InvalidVerificationTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -44,6 +45,17 @@ public class ApiExceptionHandler {
         return build(
                 HttpStatus.UNAUTHORIZED,
                 "Invalid email or password",
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(InvalidVerificationTokenException.class)
+    public ResponseEntity<ApiError> handleInvalidVerificationToken(
+            InvalidVerificationTokenException e
+    ) {
+        return build(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
                 List.of()
         );
     }

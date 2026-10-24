@@ -2,6 +2,7 @@ package com.reservation.authentication.registration;
 
 import com.reservation.users.User;
 import com.reservation.users.UserRepository;
+import com.reservation.authentication.verification.EmailVerificationService;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,10 +16,14 @@ public class RegistrationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
-    public RegistrationService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public RegistrationService(
+            UserRepository userRepository, PasswordEncoder passwordEncoder, EmailVerificationService emailVerificationService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @Transactional
@@ -45,6 +50,8 @@ public class RegistrationService {
             }
             throw e;
         }
+
+        String rawToken = emailVerificationService.createToken(user);
 
         return new RegistrationResponse(
                 user.getId(),

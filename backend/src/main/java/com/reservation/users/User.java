@@ -116,4 +116,8 @@ public class User {
                 + ", enabled=" + enabled
                 + '}';
     }
+
+    public void verifyEmail() {
+        this.emailVerified = true;
+    }
 }

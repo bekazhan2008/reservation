@@ -71,4 +71,8 @@ public class EmailVerificationToken {
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    public boolean isExpired() {
+        return !Instant.now().isBefore(expiresAt);
+    }
 }

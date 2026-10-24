@@ -1,5 +1,6 @@
 package com.reservation.authentication;
 
+import com.reservation.authentication.registration.RegistrationRequest;
 import com.reservation.support.ApiSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
