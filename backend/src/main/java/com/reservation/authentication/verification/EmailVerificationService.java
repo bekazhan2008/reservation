@@ -85,4 +85,17 @@ public class EmailVerificationService {
             );
         }
     }
+
+    @Transactional(readOnly = true)
+    public boolean isTokenActive(String rawToken) {
+        String tokenHash = hashToken(rawToken);
+
+        return tokenRepository.findByTokenHash(tokenHash)
+                .filter(token -> token.getUsedAt() == null)
+                .filter(token -> !token.isExpired())
+                .filter(token -> token.getUser().isEnabled())
+                .filter(token -> token.getUser().getDeletedAt() == null)
+                .filter(token -> !token.getUser().isEmailVerified())
+                .isPresent();
+    }
 }
