@@ -8,6 +8,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.reservation.notifications.VerificationEmailRequested;
+import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 public class RegistrationService {
@@ -17,13 +19,18 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public RegistrationService(
-            UserRepository userRepository, PasswordEncoder passwordEncoder, EmailVerificationService emailVerificationService
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            EmailVerificationService emailVerificationService,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailVerificationService = emailVerificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -52,6 +59,9 @@ public class RegistrationService {
         }
 
         String rawToken = emailVerificationService.createToken(user);
+        eventPublisher.publishEvent(
+                new VerificationEmailRequested(user.getEmail(), rawToken)
+        );
 
         return new RegistrationResponse(
                 user.getId(),
