@@ -41,7 +41,8 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/auth/register",
                                 "/api/auth/login",
-                                "/api/auth/verify-email"
+                                "/api/auth/verify-email",
+                                "/api/auth/resend-verification"
                         ).permitAll()
                         // /error — внутренний адрес Spring Boot для ответов об ошибках (например, 500).
                         // Без него такие ответы превращались бы в 401.

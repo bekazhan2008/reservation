@@ -1,7 +1,9 @@
 package com.reservation.users;
 
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +16,14 @@ public interface UserRepository
 
     @Query("select u from User u where lower(u.email) = :email")
     Optional<User> findByNormalizedEmail(
+            @Param("email") String normalizedEmail
+    );
+
+    // Блокирует строку пользователя до конца транзакции: параллельные запросы повторной отправки
+    // для одного аккаунта выполняются строго по очереди.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where lower(u.email) = :email")
+    Optional<User> findByNormalizedEmailForUpdate(
             @Param("email") String normalizedEmail
     );
 }
