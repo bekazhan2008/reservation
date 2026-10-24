@@ -2,6 +2,7 @@ package com.reservation.infrastructure;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     @Bean
+    @Profile("!worker")
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JsonSecurityErrorHandler securityErrorHandler,
