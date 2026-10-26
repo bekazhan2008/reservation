@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import PropertyImage from './PropertyImage'
 
 type Property = {
   id: number
@@ -58,6 +59,7 @@ export default function PropertyList() {
       <ul>
         {properties.map((property) => (
           <li key={property.id}>
+            <PropertyImage propertyId={property.id} />
             <h3>{property.title}</h3>
             <p>Город: {property.city}</p>
             <p>Площадь: {property.areaSqm} м²</p>
