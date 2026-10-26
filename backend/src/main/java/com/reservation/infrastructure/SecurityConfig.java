@@ -41,7 +41,9 @@ public class SecurityConfig {
                                 "/api/property-types",
                                 "/api/auth/csrf",
                                 "/api/properties",
-                                "/api/properties/{id}"
+                                "/api/properties/{id}",
+                                "/api/properties/{propertyId}/images/{imageId}",
+                                "/api/properties/{propertyId}/images"
                         ).permitAll()
 
                         .requestMatchers(
