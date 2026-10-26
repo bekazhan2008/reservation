@@ -35,8 +35,14 @@ public class SecurityConfig {
                         .securityContextRepository(securityContextRepository)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/health", "/api/property-types", "/api/auth/csrf")
-                        .permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/health",
+                                "/api/property-types",
+                                "/api/auth/csrf",
+                                "/api/properties"
+                        ).permitAll()
+
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/auth/register",
@@ -44,10 +50,11 @@ public class SecurityConfig {
                                 "/api/auth/verify-email",
                                 "/api/auth/resend-verification"
                         ).permitAll()
-                        // /error — внутренний адрес Spring Boot для ответов об ошибках (например, 500).
-                        // Без него такие ответы превращались бы в 401.
+
                         .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated())
+
+                        .anyRequest().authenticated()
+                )
                 // CSRF включён для всех изменяющих запросов (POST, PUT, PATCH, DELETE), в том числе для регистрации.
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository))

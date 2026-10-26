@@ -2,6 +2,7 @@ package com.reservation.infrastructure;
 
 import com.reservation.authentication.registration.EmailAlreadyRegisteredException;
 import com.reservation.authentication.verification.InvalidVerificationTokenException;
+import com.reservation.properties.PropertyReferenceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -52,6 +53,17 @@ public class ApiExceptionHandler {
     @ExceptionHandler(InvalidVerificationTokenException.class)
     public ResponseEntity<ApiError> handleInvalidVerificationToken(
             InvalidVerificationTokenException e
+    ) {
+        return build(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(PropertyReferenceNotFoundException.class)
+    public ResponseEntity<ApiError> handlePropertyReferenceNotFound(
+            PropertyReferenceNotFoundException e
     ) {
         return build(
                 HttpStatus.BAD_REQUEST,

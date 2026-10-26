@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import PropertyList from './components/PropertyList'
 
 type PropertyType = {
   id: number
@@ -63,6 +64,8 @@ export default function App() {
           ))}
         </ul>
       )}
+
+      <PropertyList />
     </main>
   )
 }
