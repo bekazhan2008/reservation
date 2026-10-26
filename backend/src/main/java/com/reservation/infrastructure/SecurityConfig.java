@@ -40,7 +40,8 @@ public class SecurityConfig {
                                 "/api/health",
                                 "/api/property-types",
                                 "/api/auth/csrf",
-                                "/api/properties"
+                                "/api/properties",
+                                "/api/properties/{id}"
                         ).permitAll()
 
                         .requestMatchers(

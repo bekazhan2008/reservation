@@ -3,6 +3,9 @@ package com.reservation.infrastructure;
 import com.reservation.authentication.registration.EmailAlreadyRegisteredException;
 import com.reservation.authentication.verification.InvalidVerificationTokenException;
 import com.reservation.properties.PropertyReferenceNotFoundException;
+import com.reservation.properties.PropertyNotFoundException;
+import com.reservation.properties.InvalidPriceRangeException;
+import com.reservation.properties.PropertyAccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -64,6 +67,35 @@ public class ApiExceptionHandler {
     @ExceptionHandler(PropertyReferenceNotFoundException.class)
     public ResponseEntity<ApiError> handlePropertyReferenceNotFound(
             PropertyReferenceNotFoundException e
+    ) {
+        return build(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(PropertyNotFoundException.class)
+    public ResponseEntity<ApiError> handlePropertyNotFound(
+            PropertyNotFoundException e
+    ) {
+        return build(
+                HttpStatus.NOT_FOUND,
+                e.getMessage(),
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(PropertyAccessDeniedException.class)
+    public ResponseEntity<ApiError> handlePropertyAccessDenied(
+            PropertyAccessDeniedException e
+    ) {
+        return build(HttpStatus.FORBIDDEN, e.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(InvalidPriceRangeException.class)
+    public ResponseEntity<ApiError> handleInvalidPriceRange(
+            InvalidPriceRangeException e
     ) {
         return build(
                 HttpStatus.BAD_REQUEST,

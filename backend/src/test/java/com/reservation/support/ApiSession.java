@@ -62,6 +62,16 @@ public class ApiSession {
         return postJson(path, body, csrf.path("headerName").asString(), csrf.path("token").asString());
     }
 
+    /** Запрос с телом (PUT/PATCH/...) и CSRF-токеном текущей сессии. */
+    public HttpResponse<String> sendJsonWithCsrf(String method, String path, String body) throws Exception {
+        JsonNode csrf = fetchCsrf();
+        return send(HttpRequest.newBuilder(URI.create(baseUrl + path))
+                .header("Content-Type", "application/json")
+                .header(csrf.path("headerName").asString(), csrf.path("token").asString())
+                .method(method, HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build());
+    }
+
     public List<HttpCookie> cookies() {
         return cookies.getCookieStore().getCookies();
     }

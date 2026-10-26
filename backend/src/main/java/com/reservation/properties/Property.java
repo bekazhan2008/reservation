@@ -129,6 +129,31 @@ public class Property {
         return createdAt;
     }
 
+    public void update(
+            PropertyType propertyType,
+            String title,
+            String description,
+            String city,
+            BigDecimal pricePerMonth,
+            BigDecimal areaSqm,
+            BigDecimal landAreaSotka,
+            Set<Category> categories
+    ) {
+        this.propertyType = propertyType;
+        this.title = title;
+        this.description = description;
+        this.city = city;
+        this.pricePerMonth = pricePerMonth;
+        this.areaSqm = areaSqm;
+        this.landAreaSotka = landAreaSotka;
+        this.categories.clear();
+        this.categories.addAll(categories);
+    }
+
+    public void unpublish() {
+        this.published = false;
+    }
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) {

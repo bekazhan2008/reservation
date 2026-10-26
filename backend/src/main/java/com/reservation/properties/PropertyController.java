@@ -2,6 +2,7 @@ package com.reservation.properties;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.math.BigDecimal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +34,42 @@ public class PropertyController {
                 .body(response);
     }
 
+    @PutMapping("/{id}")
+    public PropertyResponse update(
+            @PathVariable Long id,
+            @Valid @RequestBody CreatePropertyRequest request,
+            Authentication authentication
+    ) {
+        return propertyService.updateProperty(id, request, authentication.getName());
+    }
+
+    @PatchMapping("/{id}/unpublish")
+    public PropertyResponse unpublish(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return propertyService.unpublishProperty(id, authentication.getName());
+    }
+
     @GetMapping
-    public List<PropertyResponse> getAll() {
-        return propertyService.getPublishedProperties();
+    public List<PropertyResponse> getAll(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Long propertyTypeId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice
+    ) {
+        return propertyService.searchProperties(
+                title,
+                propertyTypeId,
+                categoryId,
+                minPrice,
+                maxPrice
+        );
+    }
+
+    @GetMapping("/{id}")
+    public PropertyResponse getById(@PathVariable Long id) {
+        return propertyService.getPublishedProperty(id);
     }
 }
