@@ -72,6 +72,16 @@ public class ApiSession {
                 .build());
     }
 
+    /** Запрос с телом и заранее полученным CSRF-токеном (для параллельных запросов). */
+    public HttpResponse<String> sendJsonWithCsrfToken(String method, String path, String body,
+                                                      String headerName, String token) throws Exception {
+        return send(HttpRequest.newBuilder(URI.create(baseUrl + path))
+                .header("Content-Type", "application/json")
+                .header(headerName, token)
+                .method(method, HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build());
+    }
+
     public List<HttpCookie> cookies() {
         return cookies.getCookieStore().getCookies();
     }

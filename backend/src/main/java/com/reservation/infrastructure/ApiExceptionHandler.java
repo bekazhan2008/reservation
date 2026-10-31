@@ -7,6 +7,9 @@ import com.reservation.properties.PropertyNotFoundException;
 import com.reservation.properties.InvalidPriceRangeException;
 import com.reservation.properties.PropertyAccessDeniedException;
 import com.reservation.properties.images.InvalidPropertyImageException;
+import com.reservation.reservations.InvalidReservationException;
+import com.reservation.reservations.ReservationConflictException;
+import com.reservation.reservations.ReservationNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -114,6 +117,31 @@ public class ApiExceptionHandler {
                 e.getMessage(),
                 List.of()
         );
+    }
+
+    @ExceptionHandler(ReservationConflictException.class)
+    public ResponseEntity<ApiError> handleReservationConflictException(
+            ReservationConflictException e
+    ) {
+        return build(
+                HttpStatus.CONFLICT,
+                e.getMessage(),
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(InvalidReservationException.class)
+    public ResponseEntity<ApiError> handleInvalidReservation(
+            InvalidReservationException e
+    ) {
+        return build(HttpStatus.BAD_REQUEST, e.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(ReservationNotFoundException.class)
+    public ResponseEntity<ApiError> handleReservationNotFound(
+            ReservationNotFoundException e
+    ) {
+        return build(HttpStatus.NOT_FOUND, e.getMessage(), List.of());
     }
 
     private static ResponseEntity<ApiError> build(HttpStatus status, String message,
